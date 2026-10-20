@@ -1,0 +1,17 @@
+{
+  "platform": "Squarespace",
+  "detect_signatures": [
+    "typeof window.Static !== 'undefined' && !!window.Static.SQUARESPACE_CONTEXT",
+    "!!document.querySelector('script[src*=\"squarespace\"]')"
+  ],
+  "templates_to_visit": [
+    {"slug": "/", "label": "Homepage"},
+    {"slug": "<shop>", "label": "Shop", "resolve_from": "homepage_link_matching:/shop|/store"},
+    {"slug": "<contact>", "label": "Contact", "resolve_from": "homepage_link_matching:/contact"}
+  ],
+  "interactions": [
+    {"on_template": "Product", "action": "guided", "prompt_user": "add to basket", "expected_event": "add_to_cart"}
+  ],
+  "suppressions": [],
+  "notes": "GA4 via built-in field or code injection; Squarespace's own analytics is separate from GA4. Commerce checkout is platform-hosted with limited tag access."
+}

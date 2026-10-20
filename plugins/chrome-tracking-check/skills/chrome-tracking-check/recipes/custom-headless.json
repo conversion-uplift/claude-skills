@@ -1,0 +1,18 @@
+{
+  "platform": "Custom / headless commerce",
+  "detect_signatures": [
+    "document.getElementById('__NEXT_DATA__') !== null || typeof window.__NUXT__ !== 'undefined'",
+    "performance.getEntriesByType('resource').some(function(r){return /\\/api\\/(cart|checkout|basket)|graphql/i.test(r.name)})"
+  ],
+  "templates_to_visit": [
+    {"slug": "/", "label": "Homepage"},
+    {"slug": "<category>", "label": "Category", "resolve_from": "homepage_nav_first"},
+    {"slug": "<product>", "label": "Product", "resolve_from": "category_first_product"},
+    {"slug": "<cart>", "label": "Cart", "resolve_from": "homepage_link_matching:/cart|/basket|/bag"}
+  ],
+  "interactions": [
+    {"on_template": "Product", "action": "guided", "prompt_user": "add to basket", "expected_event": "add_to_cart"}
+  ],
+  "suppressions": [],
+  "notes": "SPA — see SKILL.md SPA handling. Name the framework and commerce API in the report (e.g. 'Next.js with a commercetools API'). Everything depends on the custom dataLayer implementation; expect gaps at route changes."
+}

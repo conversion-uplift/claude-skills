@@ -1,0 +1,18 @@
+{
+  "platform": "BigCommerce",
+  "detect_signatures": [
+    "typeof window.BCData !== 'undefined'",
+    "!!document.querySelector('script[src*=\"bigcommerce.com\"]')"
+  ],
+  "templates_to_visit": [
+    {"slug": "/", "label": "Homepage"},
+    {"slug": "<category>", "label": "Category", "resolve_from": "homepage_link_matching:/categories|/shop"},
+    {"slug": "<product>", "label": "Product", "resolve_from": "category_first_product"},
+    {"slug": "/cart.php", "label": "Cart"}
+  ],
+  "interactions": [
+    {"on_template": "Product", "action": "guided", "prompt_user": "add to basket", "expected_event": "add_to_cart"}
+  ],
+  "suppressions": [],
+  "notes": "Native GA4 integration via Big Open Data Layer or scripts manager; checkout is locked-down (optimized one-page checkout) — GTM often absent there by platform design."
+}

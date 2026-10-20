@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><head><title>Thank you</title><meta charset="utf-8"><script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+gtag('consent','default',{ad_storage:'denied',analytics_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+</script>
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TEST123"></script>
+<script>
+function accept(){document.cookie='tc_consent=granted; path=/';try{localStorage.setItem('tc_consent','granted')}catch(e){};gtag('consent','update',{ad_storage:'granted',analytics_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'});document.getElementById('banner').remove();}
+function reject(){document.cookie='tc_consent=denied; path=/';document.getElementById('banner').remove();}
+document.addEventListener('DOMContentLoaded',function(){if(document.cookie.indexOf('tc_consent=')>-1){var b=document.getElementById('banner');b&&b.remove();}});
+</script>
+<link rel="canonical" href="https://shop.test/confirmation.html"></head><body>
+<div id="banner" role="dialog"><p>We use cookies.</p><button id="accept" onclick="accept()">Accept all cookies</button><button id="reject" onclick="reject()">Reject all</button></div>
+<h1>Thank you</h1>
+<script>dataLayer.push({event:"purchase",ecommerce:{transaction_id:"T-1001",currency:"GBP",value:12.5,items:[{item_id:"SKU1",price:12.5,quantity:1}]}});window.addEventListener("load",function(){setTimeout(function(){ga4hit("purchase","&cu=GBP&epn.value=12.5&ep.transaction_id=T-1001&pr1=idSKU1~pr12.5~qt1");fbq("track","Purchase")},300)});</script>
+</body></html>

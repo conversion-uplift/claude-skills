@@ -1,0 +1,17 @@
+{
+  "platform": "Webflow",
+  "detect_signatures": [
+    "document.documentElement.getAttribute('data-wf-domain')",
+    "document.querySelector('script[src*=\"webflow.com\"]')"
+  ],
+  "templates_to_visit": [
+    {"slug": "/", "label": "Homepage"},
+    {"slug": "/about", "label": "About"},
+    {"slug": "/contact", "label": "Contact"},
+    {"slug": "/blog", "label": "Blog"}
+  ],
+  "interactions": [
+    {"on_template": "Contact", "action": "submit_form", "target": "form", "expected_event": "form_submit"}
+  ],
+  "suppressions": []
+}

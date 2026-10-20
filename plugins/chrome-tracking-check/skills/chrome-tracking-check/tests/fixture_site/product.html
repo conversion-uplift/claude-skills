@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><title>Test mug</title><meta charset="utf-8"><script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+gtag('consent','default',{ad_storage:'denied',analytics_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+</script>
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TEST123"></script>
+<script>
+function accept(){document.cookie='tc_consent=granted; path=/';try{localStorage.setItem('tc_consent','granted')}catch(e){};gtag('consent','update',{ad_storage:'granted',analytics_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'});document.getElementById('banner').remove();}
+function reject(){document.cookie='tc_consent=denied; path=/';document.getElementById('banner').remove();}
+document.addEventListener('DOMContentLoaded',function(){if(document.cookie.indexOf('tc_consent=')>-1){var b=document.getElementById('banner');b&&b.remove();}});
+</script>
+<link rel="canonical" href="https://shop.test/product.html"></head><body>
+<div id="banner" role="dialog"><p>We use cookies.</p><button id="accept" onclick="accept()">Accept all cookies</button><button id="reject" onclick="reject()">Reject all</button></div>
+<h1>Test mug</h1>
+<script>dataLayer.push({event:"view_item",ecommerce:{currency:"GBP",value:12.5,items:[{item_id:"SKU1",item_name:"Test mug",price:12.5,quantity:1}]}});</script>
+<button id="add" onclick="dataLayer.push({event:&quot;add_to_cart&quot;,ecommerce:{currency:&quot;GBP&quot;,value:12.5,items:[{item_id:&quot;SKU1&quot;,price:12.5,quantity:1}]}});ga4hit(&quot;add_to_cart&quot;,&quot;&amp;cu=GBP&amp;epn.value=12.5&amp;pr1=idSKU1~pr12.5~qt1&quot;);ga4hit(&quot;add_to_cart&quot;,&quot;&amp;cu=GBP&amp;epn.value=12.5&amp;pr1=idSKU1~pr12.5~qt1&quot;);fbq(&quot;track&quot;,&quot;AddToCart&quot;);">Add to basket</button>
+<a href="/checkout.html">Checkout</a>
+</body></html>

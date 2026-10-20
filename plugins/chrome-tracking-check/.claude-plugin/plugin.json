@@ -1,0 +1,12 @@
+{
+  "name": "chrome-tracking-check",
+  "version": "1.0.0",
+  "description": "Check GA4, GTM, Consent Mode and ad pixels on a live site through Claude in Chrome, including human-led checkout and form journeys, and get a Word report.",
+  "author": {
+    "name": "Conversion Uplift",
+    "url": "https://conversion-uplift.co.uk"
+  },
+  "homepage": "https://conversion-uplift.co.uk/post/how-to-use-chrome-dev-tools-for-debugging-google-analytics-and-gtm/",
+  "license": "MIT",
+  "keywords": ["ga4", "google-tag-manager", "consent-mode", "tracking", "analytics", "chrome"]
+}

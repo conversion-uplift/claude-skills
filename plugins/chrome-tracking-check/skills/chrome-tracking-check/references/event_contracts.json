@@ -1,0 +1,100 @@
+{
+  "_about": "Required and recommended parameter names for GA4 events. Used by aggregate_findings.py to emit GA4_EVENT_PARAM_MISSING. Parameter values are out of scope (we only check NAMES) to avoid PII intake.",
+  "_severity": {
+    "required_missing_default": "Medium",
+    "required_missing_on_critical_events": "High"
+  },
+  "_critical_events": ["purchase", "refund"],
+  "events": {
+    "purchase": {
+      "required": ["transaction_id", "value", "currency", "items"],
+      "recommended": ["coupon", "shipping", "tax", "affiliation"]
+    },
+    "refund": {
+      "required": ["transaction_id", "value", "currency"],
+      "recommended": ["items"]
+    },
+    "add_to_cart": {
+      "required": ["currency", "value", "items"],
+      "recommended": []
+    },
+    "remove_from_cart": {
+      "required": ["currency", "value", "items"],
+      "recommended": []
+    },
+    "view_cart": {
+      "required": ["currency", "value", "items"],
+      "recommended": []
+    },
+    "begin_checkout": {
+      "required": ["currency", "value", "items"],
+      "recommended": ["coupon"]
+    },
+    "add_shipping_info": {
+      "required": ["currency", "value", "items"],
+      "recommended": ["coupon", "shipping_tier"]
+    },
+    "add_payment_info": {
+      "required": ["currency", "value", "items"],
+      "recommended": ["coupon", "payment_type"]
+    },
+    "view_item": {
+      "required": ["currency", "value", "items"],
+      "recommended": []
+    },
+    "view_item_list": {
+      "required": ["items"],
+      "recommended": ["item_list_id", "item_list_name"]
+    },
+    "select_item": {
+      "required": ["items"],
+      "recommended": ["item_list_id", "item_list_name"]
+    },
+    "select_promotion": {
+      "required": [],
+      "recommended": ["promotion_id", "promotion_name", "creative_name", "creative_slot", "location_id"]
+    },
+    "view_promotion": {
+      "required": [],
+      "recommended": ["promotion_id", "promotion_name", "creative_name", "creative_slot", "location_id"]
+    },
+    "sign_up": {
+      "required": ["method"],
+      "recommended": []
+    },
+    "login": {
+      "required": ["method"],
+      "recommended": []
+    },
+    "generate_lead": {
+      "required": [],
+      "recommended": ["value", "currency"]
+    },
+    "search": {
+      "required": ["search_term"],
+      "recommended": []
+    },
+    "view_search_results": {
+      "required": ["search_term"],
+      "recommended": []
+    },
+    "share": {
+      "required": [],
+      "recommended": ["method", "content_type", "item_id"]
+    },
+    "join_group": {
+      "required": [],
+      "recommended": ["group_id"]
+    },
+    "earn_virtual_currency": {
+      "required": ["virtual_currency_name", "value"],
+      "recommended": []
+    },
+    "spend_virtual_currency": {
+      "required": ["virtual_currency_name", "value", "item_name"],
+      "recommended": []
+    }
+  },
+  "item_required": ["item_id", "item_name"],
+  "item_recommended": ["price", "quantity", "item_brand", "item_category", "item_variant", "discount", "index"]
+}

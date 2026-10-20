@@ -1,0 +1,245 @@
+#!/usr/bin/env python3
+"""
+exporters.py — emit downstream-friendly artefacts alongside the DOCX.
+
+Inputs: --scored <scored.json>   (the output of severity_scorer.py)
+        --per-page <per_page.json>  (the input to aggregate_findings.py; needed
+                                     for event-level export)
+        --site <https://example.com>
+        --output-dir <folder>      (DOCX folder)
+
+Outputs (filename pattern: <domain>_<YYYYMMDD>_<artefact>):
+  - <domain>_<date>_findings.csv      one row per (finding, evidence) pair
+  - <domain>_<date>_events.csv        one row per (page, event, source)
+  - <domain>_<date>_tag_inventory.csv long-format per-page tag matrix
+  - <domain>_<date>_audit.json        full machine-readable payload
+  - <domain>_<date>_bigquery_schema.sql  CREATE TABLE for the events CSV
+
+A data analyst can drop the CSVs into Excel, the JSON into any pipeline, and
+the SQL into BigQuery without writing schema by hand.
+"""
+
+from __future__ import annotations
+import argparse, csv, json, os, sys
+from datetime import date
+from pathlib import Path
+from urllib.parse import urlparse
+
+
+def _domain_slug(site: str) -> str:
+    h = urlparse(site).hostname or "site"
+    return h.replace("www.", "").replace(".", "_")
+
+
+def _file_stem(site: str) -> str:
+    return f"{_domain_slug(site)}_{date.today().strftime('%Y%m%d')}"
+
+
+def export_findings_csv(scored: dict, out_path: Path) -> None:
+    findings = scored.get("findings", []) or []
+    audit_date = date.today().isoformat()
+    with open(out_path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow([
+            "audit_date", "finding_id", "severity", "confidence", "category",
+            "title", "page_url", "observation_detail", "recommendation",
+            "positive",
+        ])
+        for fnd in findings:
+            ev_rows = fnd.get("evidence") or [{}]
+            for ev in ev_rows:
+                w.writerow([
+                    audit_date,
+                    fnd.get("id", ""),
+                    fnd.get("severity", ""),
+                    fnd.get("confidence", ""),
+                    fnd.get("category", ""),
+                    fnd.get("title", ""),
+                    ev.get("url", ""),
+                    (ev.get("detail") or "")[:500],
+                    (fnd.get("recommendation") or "")[:1000],
+                    "true" if fnd.get("positive") else "false",
+                ])
+
+
+def export_events_csv(per_page: dict, out_path: Path) -> None:
+    pages = per_page.get("pages", []) or []
+    with open(out_path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow([
+            "audit_date", "page_url", "template_label", "event_name", "source",
+            "param_names_semicolon", "count",
+        ])
+        for p in pages:
+            snap = p.get("post_consent") or p.get("pre_consent") or {}
+            for slot in (snap.get("events") or {}).get("events_seen", []) or []:
+                sources = slot.get("sources") or []
+                # Emit one row per source, so an event observed in both
+                # dataLayer and network produces two rows — easier to pivot.
+                for src in (sources or ["unknown"]):
+                    w.writerow([
+                        date.today().isoformat(),
+                        p.get("url", ""),
+                        p.get("template_label", ""),
+                        slot.get("event_name", ""),
+                        src,
+                        ";".join(slot.get("param_names") or []),
+                        slot.get("count", 0),
+                    ])
+
+
+def export_tag_inventory_csv(scored: dict, out_path: Path) -> None:
+    rows = scored.get("per_page_inventory", []) or []
+    with open(out_path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow([
+            "audit_date", "page_url", "vendor_kind", "vendor_value", "value_kind",
+        ])
+        for r in rows:
+            url = r.get("url", "")
+            audit_date = date.today().isoformat()
+            for vid in (r.get("ga4_ids") or []):
+                w.writerow([audit_date, url, "ga4", vid, "measurement_id"])
+            for vid in (r.get("gtm_ids") or []):
+                w.writerow([audit_date, url, "gtm", vid, "container_id"])
+            w.writerow([audit_date, url, "consent_mode_v2",
+                        "true" if r.get("consent_mode_v2") else "false", "flag"])
+            for v in (r.get("other_vendors") or []):
+                w.writerow([audit_date, url, "vendor", v, "name"])
+
+
+def export_audit_json(scored: dict, per_page: dict, out_path: Path) -> None:
+    payload = {
+        "scored": scored,
+        "per_page": per_page,
+        "exported_at": date.today().isoformat(),
+    }
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+
+
+def export_bigquery_schema(out_path: Path, events_table: str = "ga4_audit_events") -> None:
+    sql = f"""-- Auto-generated by chrome-tracking-check/scripts/exporters.py
+-- Load the events.csv with: bq load --autodetect=false --source_format=CSV --skip_leading_rows=1 <dataset>.{events_table} <events.csv>
+
+CREATE TABLE IF NOT EXISTS `{events_table}` (
+  audit_date            DATE        NOT NULL,
+  page_url              STRING      NOT NULL,
+  template_label        STRING,
+  event_name            STRING      NOT NULL,
+  source                STRING      NOT NULL,  -- 'dataLayer' or 'network'
+  param_names_semicolon STRING,
+  count                 INT64
+)
+PARTITION BY audit_date
+CLUSTER BY page_url, event_name
+OPTIONS(
+  description = "GA4 tracking audit events export. One row per (page, event_name, source)."
+);
+
+-- Equivalent for findings.csv:
+CREATE TABLE IF NOT EXISTS `ga4_audit_findings` (
+  audit_date          DATE     NOT NULL,
+  finding_id          STRING   NOT NULL,
+  severity            STRING   NOT NULL,
+  confidence          STRING,
+  category            STRING,
+  title               STRING,
+  page_url            STRING,
+  observation_detail  STRING,
+  recommendation      STRING,
+  positive            BOOL
+)
+PARTITION BY audit_date
+CLUSTER BY severity, finding_id;
+"""
+    out_path.write_text(sql, encoding="utf-8")
+
+
+
+def export_processor_inventory(per_page: dict, out_path: Path) -> None:
+    """Privacy: one row per (page, vendor) with role + privacy URL, populated
+    from VENDOR_ROLE_MAP in aggregate_findings.py."""
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        from aggregate_findings import VENDOR_ROLE_MAP
+    except Exception:
+        VENDOR_ROLE_MAP = {}
+    audit_date = date.today().isoformat()
+    rows = []
+    seen = set()  # dedupe (page_url, vendor)
+    for p in per_page.get("pages", []) or []:
+        url = p.get("url", "")
+        snap = p.get("post_consent") or p.get("pre_consent") or {}
+        vendors = (snap.get("vendors") or {})
+        for vname, vinfo in vendors.items():
+            if not vinfo or not vinfo.get("present"): continue
+            key = (url, vname)
+            if key in seen: continue
+            seen.add(key)
+            meta = VENDOR_ROLE_MAP.get(vname, {})
+            rows.append({
+                "audit_date": audit_date,
+                "page_url": url,
+                "vendor": vname,
+                "role": meta.get("role", "Unknown — verify"),
+                "privacy_policy_url": meta.get("policy", ""),
+                "ids_observed_semicolon": ";".join(vinfo.get("ids") or []),
+                "art28_contract_required": "Yes" if "Processor" in (meta.get("role","")) else "Joint-controller agreement",
+            })
+    with open(out_path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["audit_date","page_url","vendor","role","privacy_policy_url",
+                    "ids_observed_semicolon","art28_contract_required"])
+        for r in rows:
+            w.writerow([r["audit_date"], r["page_url"], r["vendor"], r["role"],
+                        r["privacy_policy_url"], r["ids_observed_semicolon"],
+                        r["art28_contract_required"]])
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--scored", required=True)
+    ap.add_argument("--per-page", required=True)
+    ap.add_argument("--site", required=True)
+    ap.add_argument("--output-dir", required=True)
+    args = ap.parse_args()
+
+    with open(args.scored, "r", encoding="utf-8") as f: scored = json.load(f)
+    with open(args.per_page, "r", encoding="utf-8") as f: per_page = json.load(f)
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from normalise_probe import normalise
+    for _p in per_page.get("pages", []) or []:
+        for _k in ("pre_consent", "post_consent"):
+            if isinstance(_p.get(_k), dict):
+                _p[_k] = normalise(_p[_k])
+
+    out = Path(args.output_dir); out.mkdir(parents=True, exist_ok=True)
+    stem = _file_stem(args.site)
+
+    findings_csv = out / f"{stem}_findings.csv"
+    events_csv = out / f"{stem}_events.csv"
+    inv_csv = out / f"{stem}_tag_inventory.csv"
+    audit_json = out / f"{stem}_audit.json"
+    bq_sql = out / f"{stem}_bigquery_schema.sql"
+
+    export_findings_csv(scored, findings_csv)
+    export_events_csv(per_page, events_csv)
+    export_tag_inventory_csv(scored, inv_csv)
+    export_audit_json(scored, per_page, audit_json)
+    export_bigquery_schema(bq_sql)
+    proc_csv = out / f"{stem}_processor_inventory.csv"
+    export_processor_inventory(per_page, proc_csv)
+
+    print(f"Wrote {findings_csv}")
+    print(f"Wrote {events_csv}")
+    print(f"Wrote {inv_csv}")
+    print(f"Wrote {audit_json}")
+    print(f"Wrote {bq_sql}")
+    print(f"Wrote {proc_csv}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

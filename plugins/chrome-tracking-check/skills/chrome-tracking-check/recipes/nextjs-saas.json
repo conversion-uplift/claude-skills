@@ -1,0 +1,17 @@
+{
+  "platform": "Next.js SaaS",
+  "detect_signatures": [
+    "document.getElementById('__NEXT_DATA__') !== null"
+  ],
+  "templates_to_visit": [
+    {"slug": "/", "label": "Homepage"},
+    {"slug": "/pricing", "label": "Pricing"},
+    {"slug": "/signup", "label": "Sign up"},
+    {"slug": "/login", "label": "Login"}
+  ],
+  "interactions": [
+    {"on_template": "Pricing", "action": "click", "target": "a[href*='signup'], button:matches('Get started','Try free','Sign up')", "expected_event": "select_promotion"}
+  ],
+  "suppressions": [],
+  "notes": "Next.js sites are SPA — see SKILL.md 'SPA handling' section. Inspector returns empty on initial load until hydration completes."
+}

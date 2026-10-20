@@ -1,0 +1,15 @@
+{
+  "name": "conversion-uplift",
+  "description": "Free Claude skills for checking analytics and ad tracking, from Conversion Uplift.",
+  "owner": {
+    "name": "Conversion Uplift"
+  },
+  "plugins": [
+    {
+      "name": "chrome-tracking-check",
+      "source": "./plugins/chrome-tracking-check",
+      "description": "Check GA4, GTM, Consent Mode and ad pixels on a live site through Claude in Chrome, including human-led checkout and form journeys, and get a Word report.",
+      "version": "1.0.0"
+    }
+  ]
+}

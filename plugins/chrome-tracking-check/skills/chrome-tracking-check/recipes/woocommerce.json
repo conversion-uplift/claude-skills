@@ -1,0 +1,18 @@
+{
+  "platform": "WooCommerce",
+  "detect_signatures": [
+    "document.querySelector('script[src*=\"wp-content/plugins/woocommerce\"]')",
+    "document.body.classList.contains('woocommerce')"
+  ],
+  "templates_to_visit": [
+    {"slug": "/", "label": "Homepage"},
+    {"slug": "/shop/", "label": "Shop"},
+    {"slug": "/product-category/<first>", "label": "Category", "resolve_from": "homepage_link_matching:/product-category/"},
+    {"slug": "/cart/", "label": "Cart"},
+    {"slug": "/checkout/", "label": "Checkout"}
+  ],
+  "interactions": [
+    {"on_template": "Category", "action": "click", "target": "a.add_to_cart_button:first-of-type", "expected_event": "add_to_cart"}
+  ],
+  "suppressions": []
+}

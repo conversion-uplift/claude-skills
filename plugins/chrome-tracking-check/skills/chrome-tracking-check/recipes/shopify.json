@@ -1,0 +1,20 @@
+{
+  "platform": "Shopify",
+  "detect_signatures": [
+    "window.Shopify && window.Shopify.shop",
+    "script[src*='cdn.shopify.com']"
+  ],
+  "templates_to_visit": [
+    {"slug": "/", "label": "Homepage"},
+    {"slug": "/collections/all", "label": "Collection"},
+    {"slug": "/products/<first>", "label": "Product", "resolve_from": "homepage_link_matching:/products/"},
+    {"slug": "/cart", "label": "Cart"},
+    {"slug": "/account/login", "label": "Account login"}
+  ],
+  "interactions": [
+    {"on_template": "Product", "action": "click", "target": "button[name='add'], button.product-form__cart-submit", "expected_event": "add_to_cart"}
+  ],
+  "suppressions": [
+    {"finding_id": "PII_LEAK_IN_PARAMS", "match_detail_contains": "_y=", "reason": "Shopify _y cookie is a hashed session ID, not PII."}
+  ]
+}

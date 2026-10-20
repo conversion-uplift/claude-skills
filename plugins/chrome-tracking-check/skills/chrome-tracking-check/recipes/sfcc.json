@@ -1,0 +1,18 @@
+{
+  "platform": "Salesforce Commerce Cloud",
+  "detect_signatures": [
+    "location.pathname.indexOf('/on/demandware.store/') !== -1 || document.cookie.indexOf('dwanonymous_') !== -1",
+    "!!document.querySelector('script[src*=\"demandware\"]')"
+  ],
+  "templates_to_visit": [
+    {"slug": "/", "label": "Homepage"},
+    {"slug": "<category>", "label": "Category", "resolve_from": "homepage_nav_first"},
+    {"slug": "<product>", "label": "Product", "resolve_from": "category_first_product"},
+    {"slug": "/cart", "label": "Cart"}
+  ],
+  "interactions": [
+    {"on_template": "Product", "action": "guided", "prompt_user": "add to basket", "expected_event": "add_to_cart"}
+  ],
+  "suppressions": [],
+  "notes": "Enterprise builds — expect heavily customised dataLayers, often Tealium or Adobe Launch alongside GTM. Multiple tag managers on one page is a common SFCC finding."
+}

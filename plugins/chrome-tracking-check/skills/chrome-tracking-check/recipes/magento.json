@@ -1,0 +1,19 @@
+{
+  "platform": "Magento / Adobe Commerce",
+  "detect_signatures": [
+    "document.cookie.indexOf('mage-') !== -1 || !!document.querySelector('script[src*=\"/static/version\"]')",
+    "!!document.querySelector('[data-mage-init]')"
+  ],
+  "templates_to_visit": [
+    {"slug": "/", "label": "Homepage"},
+    {"slug": "<category>", "label": "Category", "resolve_from": "homepage_link_matching:.html"},
+    {"slug": "<product>", "label": "Product", "resolve_from": "category_first_product"},
+    {"slug": "/checkout/cart/", "label": "Cart"},
+    {"slug": "/checkout/", "label": "Checkout"}
+  ],
+  "interactions": [
+    {"on_template": "Product", "action": "guided", "prompt_user": "add to basket", "expected_event": "add_to_cart"}
+  ],
+  "suppressions": [],
+  "notes": "Expect a GTM ecommerce dataLayer (often via WeltPixel/Magepal/Anowave extensions). Common duplication: two GA4 extensions plus GTM. Checkout is a knockout.js SPA — events may need route-change handling."
+}

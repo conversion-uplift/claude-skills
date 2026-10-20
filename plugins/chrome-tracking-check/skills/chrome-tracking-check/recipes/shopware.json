@@ -1,0 +1,18 @@
+{
+  "platform": "Shopware",
+  "detect_signatures": [
+    "typeof window.Shopware !== 'undefined'",
+    "!!document.querySelector('script[src*=\"/widgets/\"]') && document.cookie.indexOf('sw-') !== -1"
+  ],
+  "templates_to_visit": [
+    {"slug": "/", "label": "Homepage"},
+    {"slug": "<category>", "label": "Category", "resolve_from": "homepage_nav_first"},
+    {"slug": "<product>", "label": "Product", "resolve_from": "category_first_product"},
+    {"slug": "/checkout/cart", "label": "Cart"}
+  ],
+  "interactions": [
+    {"on_template": "Product", "action": "guided", "prompt_user": "add to basket", "expected_event": "add_to_cart"}
+  ],
+  "suppressions": [],
+  "notes": "Common in DACH. Native GTM integration plugins push a standard GA4 ecommerce dataLayer."
+}

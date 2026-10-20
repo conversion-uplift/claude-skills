@@ -1,0 +1,18 @@
+{
+  "platform": "PrestaShop",
+  "detect_signatures": [
+    "typeof window.prestashop !== 'undefined'",
+    "!!document.querySelector('script[src*=\"/modules/ps_\"]')"
+  ],
+  "templates_to_visit": [
+    {"slug": "/", "label": "Homepage"},
+    {"slug": "<category>", "label": "Category", "resolve_from": "homepage_nav_first"},
+    {"slug": "<product>", "label": "Product", "resolve_from": "category_first_product"},
+    {"slug": "/cart?action=show", "label": "Cart"}
+  ],
+  "interactions": [
+    {"on_template": "Product", "action": "guided", "prompt_user": "add to basket", "expected_event": "add_to_cart"}
+  ],
+  "suppressions": [],
+  "notes": "GA4/GTM usually via third-party modules; module + manually-pasted gtag duplication is common."
+}
