@@ -1,5 +1,17 @@
 # Changelog
 
+## gtm-google-tag-upgrade-review 1.0.0 (October 2026)
+
+First public release.
+
+- Read-only review of a GTM container and its Google tags before Google's
+  container upgrade, through Claude in Chrome.
+- Compares all 12 Google tag settings, recommends which tag's settings the
+  container should keep, and rates the risks (enhanced conversions, session
+  timeout, consent, access, lookup tables, gtag.config triggers).
+- Word report and a draft covering email. Rules last verified 22/10/2026.
+- `scripts/build_zip.sh` now builds any skill in the repo (or all of them).
+
 ## chrome-tracking-check 1.0.0 (October 2026)
 
 First public release.

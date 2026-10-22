@@ -1,0 +1,12 @@
+{
+  "name": "gtm-google-tag-upgrade-review",
+  "version": "1.0.0",
+  "description": "Review a GTM container and its Google tags before Google's container upgrade, decide which settings to keep, rate the risks and get a Word report. Read-only, through Claude in Chrome.",
+  "author": {
+    "name": "Conversion Uplift",
+    "url": "https://conversion-uplift.co.uk"
+  },
+  "homepage": "https://conversion-uplift.co.uk",
+  "license": "MIT",
+  "keywords": ["google-tag-manager", "google-tag", "ga4", "google-ads", "enhanced-conversions", "gtm-upgrade"]
+}

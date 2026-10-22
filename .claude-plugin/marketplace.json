@@ -10,6 +10,12 @@
       "source": "./plugins/chrome-tracking-check",
       "description": "Check GA4, GTM, Consent Mode and ad pixels on a live site through Claude in Chrome, including human-led checkout and form journeys, and get a Word report.",
       "version": "1.0.0"
+    },
+    {
+      "name": "gtm-google-tag-upgrade-review",
+      "source": "./plugins/gtm-google-tag-upgrade-review",
+      "description": "Review a GTM container and its Google tags before Google's container upgrade, decide which settings to keep, rate the risks and get a Word report. Read-only, through Claude in Chrome.",
+      "version": "1.0.0"
     }
   ]
 }
