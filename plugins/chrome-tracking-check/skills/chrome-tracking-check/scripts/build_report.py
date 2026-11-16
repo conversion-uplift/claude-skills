@@ -112,6 +112,7 @@ def build_payload(scored, site, change_summary=None):
         "recommendationsRoadmap": roadmap,
         "changeSummary": change_summary or {},
         "journey": scored.get("journey") or {},
+        "datalayerSpec": scored.get("datalayer_spec") or {},
     }
 
 
@@ -229,6 +230,10 @@ def _finding_block(doc, f, condensed=False):
         para.paragraph_format.space_after = Pt(8)
         _run(para, "What to do: ", bold=True, size=10.5, color=BRAND_ORANGE)
         _run(para, f["recommendation"], size=10.5)
+    if f.get("owner"):
+        _p(doc, f"Who fixes it: {f['owner']}.", size=9.5, color=BRAND_GREY)
+    if f.get("severity_note"):
+        _p(doc, f["severity_note"], size=9.5, color=BRAND_GREY)
 
 
 def _journey(doc, d):
@@ -291,6 +296,14 @@ def _findings(doc, d):
         _p(doc, "Nothing at Medium or Low severity was found on the pages tested.",
            size=11)
 
+    notes = [f for f in findings if f.get("severity") == "Info" and not f.get("positive")]
+    if notes:
+        _h1(doc, "Notes for whoever fixes this")
+        _p(doc, "These do not affect the grade. They explain causes, record what could not be "
+                "tested, or point to checks that need account access.", size=11)
+        for f in notes:
+            _finding_block(doc, f, condensed=True)
+
     _h1(doc, "What is working well")
     if wins:
         _p(doc, "It is not all bad news, and it is fair to say so:", size=11)
@@ -337,6 +350,33 @@ def _appendices(doc, d):
                rows, size=9, body_size=9)
 
 
+def _datalayer_appendix(doc, d):
+    """Appendix C: the data layer status table from datalayer_spec.py.
+
+    The full specification, with target pushes and form listeners, is the
+    Markdown file datalayer_spec.py writes; the report carries the summary.
+    """
+    spec = d.get("datalayerSpec") or {}
+    events = spec.get("events") or []
+    if not events:
+        return
+    _h1(doc, "Appendix C. Data layer specification")
+    kind = (spec.get("site_type") or "").replace("_", " ")
+    _p(doc, "What the site pushes into the data layer for each ecommerce and lead event, "
+            f"checked against the GA4 specification{f' for a {kind} site' if kind else ''}. "
+            "Not tested means nobody performed that step in this check, so nothing is known about it. "
+            "The developer specification, with the target code for every event, is supplied "
+            "with this report as a separate file.", size=10.5)
+    rows = [[r.get("event", ""), r.get("status", ""), r.get("where_expected", ""),
+             "; ".join(r.get("issues") or []) or "–", r.get("owner") or "–"] for r in events]
+    _table(doc, ["Event", "Status", "Should fire", "Gaps", "Who fixes"], rows, size=9, body_size=9)
+    vendors = spec.get("form_vendors") or []
+    if vendors:
+        _p(doc, "Form platforms found: " + ", ".join(v.replace("_", " ") for v in vendors)
+                + ". The specification names the success signal to push generate_lead from for each.",
+           size=10, color=BRAND_GREY, space_before=6)
+
+
 def _roadmap(doc, d):
     _h1(doc, "What to do next")
     road = d.get("recommendationsRoadmap") or []
@@ -366,6 +406,7 @@ def render(doc, d):
     _change_summary(doc, d)
     _findings(doc, d)
     _appendices(doc, d)
+    _datalayer_appendix(doc, d)
     _roadmap(doc, d)
 
 

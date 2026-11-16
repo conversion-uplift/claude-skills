@@ -1,5 +1,32 @@
 # Changelog
 
+## chrome-tracking-check 1.1.0 (November 2026)
+
+- **Data layer documentation.** New `probe_datalayer.js` reads the data layer's
+  shape (key names and types, never values), forms (field names only) and the
+  form platform. New `datalayer_spec.py` turns it into `DL_*` findings, a
+  report appendix and a Markdown specification with the target push for every
+  GA4 ecommerce event and for lead form submissions, plus the success signal
+  for 20 form platforms.
+- Checks: Universal Analytics ecommerce shape, pushes not cleared with
+  `ecommerce: null`, missing `items`/`transaction_id`/`currency`, invalid
+  currency codes, money sent as text, items without an ID or name, duplicate
+  pushes, value that doesn't match the items, personal data outside
+  `user_data`, leads counted from `gtm.formSubmit` only, lead events with no
+  form identifier, and enquiry forms with no hidden click-ID fields.
+- Every data layer finding names who fixes it (developer or GTM owner), and
+  the journey cross-check says whether a gap is the push or the tag.
+- One severity per issue: a data layer finding that explains a problem already
+  graded becomes an Info root-cause note, so the grade is not docked twice.
+- The Word report now shows Info findings that are not positives (causes,
+  untestable checks) under "Notes for whoever fixes this". Previously they were
+  dropped.
+- Fix: `event_contracts.json` treated `value` and `currency` as required on
+  `view_item`, `add_to_cart` and the other pre-purchase events. GA4 only
+  requires `currency` when `value` is sent, so those events no longer raise
+  `GA4_EVENT_PARAM_MISSING` for it.
+- Self-test covers the data layer; new browser-free `test_datalayer_spec.py`.
+
 ## gtm-google-tag-upgrade-review 1.0.0 (October 2026)
 
 First public release.

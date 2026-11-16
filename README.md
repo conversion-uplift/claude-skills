@@ -6,7 +6,7 @@ before you install it.
 
 | Skill | What it does |
 |---|---|
-| [Chrome Tracking Check](#chrome-tracking-check) | Watches what your site actually sends to GA4, Google Ads, Meta and other platforms, and writes a Word report with severity-rated findings. |
+| [Chrome Tracking Check](#chrome-tracking-check) | Watches what your site actually sends to GA4, Google Ads, Meta and other platforms, writes a Word report with severity-rated findings, and documents your data layer for ecommerce and lead forms. |
 | [GTM Google Tag Upgrade Review](#gtm-google-tag-upgrade-review) | Reviews a GTM container before Google's upgrade that merges the Google tag into GTM, decides which settings to keep, and writes a Word report. |
 
 ## Chrome Tracking Check
@@ -15,6 +15,14 @@ Chrome Tracking Check watches what your website actually sends to GA4, Google
 Ads, Meta and the other platforms, using the Claude in Chrome extension, and
 writes a Word report: findings rated by severity, the evidence for each, an A
 to F grade, and CSV and JSON exports.
+
+On shops and lead generation sites it also documents your **data layer**: what
+each ecommerce event and form submission pushes today, what is missing or
+malformed against GA4, the target `dataLayer.push` for every event, and the
+success signal to use for your form platform (HubSpot, Contact Form 7, Gravity
+Forms, Marketo, Calendly and others). Each problem says who fixes it, your
+developer or whoever manages your tags. You get it as a Markdown file you can
+hand straight to a developer.
 
 It has two modes:
 
@@ -61,7 +69,10 @@ Do this with any skill, ours included. Everything the skill runs is in
 - `scripts/inspectors/probe.js` is the JavaScript it runs in your pages. It is
   about 10KB and readable. It reads the page, the data layer, cookie names and
   the measurement requests the page has made, and returns them to Claude. It
-  sends nothing anywhere.
+  sends nothing anywhere. `probe_datalayer.js` reads the data layer's key
+  names and types and your forms' field names. It never reads what anyone
+  typed into a form, and records an email or phone number in the data layer
+  as a flag, never the value.
 - Personal data stays in the page. URLs are reported as origin, path and
   parameter names. If an email address or phone number appears in a tracking
   request, the report records that it was there and where, never the value.
@@ -70,7 +81,8 @@ Do this with any skill, ours included. Everything the skill runs is in
   sees your public IP address) only if you agree and it is run with `--lookup`.
   Nothing else makes network calls.
 - The rules that decide findings and grades are in
-  `scripts/aggregate_findings.py` and `scripts/journey_checks.py`. If you think
+  `scripts/aggregate_findings.py`, `scripts/journey_checks.py` and
+  `scripts/datalayer_spec.py`. If you think
   a finding is wrong, the rule that produced it is there to read.
 
 ### Use it on sites you're allowed to test
@@ -95,7 +107,11 @@ a local fake shop with known faults (a pixel before consent, a duplicate
 add_to_cart, an email in a URL, a missing Google Ads conversion). Nothing
 leaves the machine.
 
+`tests/test_datalayer_spec.py` checks the data layer rules against a captured
+fixture and needs no browser.
+
 ```
+python plugins/chrome-tracking-check/skills/chrome-tracking-check/tests/test_datalayer_spec.py
 pip install playwright python-docx && python -m playwright install chromium
 python plugins/chrome-tracking-check/skills/chrome-tracking-check/tests/run_fixture.py --out /tmp/tc-selftest
 ```
