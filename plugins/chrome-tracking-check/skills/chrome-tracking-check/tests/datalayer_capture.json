@@ -1,0 +1,393 @@
+{
+ "url": "https://shop.test/datalayer_cases.html",
+ "dataLayerLength": 14,
+ "baselineIndex": 12,
+ "entries": [
+  {
+   "i": 2,
+   "event": "view_item_list",
+   "src": "push",
+   "afterBaseline": false,
+   "keys": {
+    "event": "string",
+    "ecommerce": "object",
+    "ecommerce.item_list_name": "string",
+    "ecommerce.items": "array",
+    "ecommerce.items[].item_id": "string",
+    "ecommerce.items[].item_name": "string",
+    "ecommerce.items[].price": "number",
+    "ecommerce.items[].quantity": "number"
+   },
+   "ecommerce": {
+    "shape": "ga4",
+    "uaActions": [],
+    "currencyType": "undefined",
+    "currency": null,
+    "itemCount": 2,
+    "itemKeys": {
+     "item_id": "string",
+     "item_name": "string",
+     "price": "mixed",
+     "quantity": "number"
+    },
+    "itemsWithoutIdOrName": 0,
+    "itemsWithoutPrice": 0,
+    "itemsWithoutQuantity": 1,
+    "itemSum": null,
+    "transactionId": null,
+    "clearedBefore": true
+   },
+   "safeValues": {
+    "event": "view_item_list"
+   }
+  },
+  {
+   "i": 3,
+   "event": "view_item",
+   "src": "push",
+   "afterBaseline": false,
+   "keys": {
+    "event": "string",
+    "ecommerce": "object",
+    "ecommerce.currency": "string",
+    "ecommerce.value": "string",
+    "ecommerce.items": "array",
+    "ecommerce.items[].item_id": "string",
+    "ecommerce.items[].item_name": "string",
+    "ecommerce.items[].price": "number"
+   },
+   "ecommerce": {
+    "shape": "ga4",
+    "uaActions": [],
+    "currencyType": "string",
+    "currency": "GBP",
+    "itemCount": 1,
+    "itemKeys": {
+     "item_id": "string",
+     "item_name": "string",
+     "price": "number"
+    },
+    "itemsWithoutIdOrName": 0,
+    "itemsWithoutPrice": 0,
+    "itemsWithoutQuantity": 1,
+    "itemSum": 24.99,
+    "transactionId": null,
+    "valueType": "string",
+    "valueNumeric": false,
+    "clearedBefore": false
+   },
+   "safeValues": {
+    "event": "view_item"
+   }
+  },
+  {
+   "i": 5,
+   "event": "addToCart",
+   "src": "push",
+   "afterBaseline": false,
+   "keys": {
+    "event": "string",
+    "ecommerce": "object",
+    "ecommerce.currencyCode": "string",
+    "ecommerce.add": "object",
+    "ecommerce.add.products": "array",
+    "ecommerce.add.products[].id": "string",
+    "ecommerce.add.products[].name": "string",
+    "ecommerce.add.products[].price": "string",
+    "ecommerce.add.products[].quantity": "number"
+   },
+   "ecommerce": {
+    "shape": "ua",
+    "uaActions": [
+     "add"
+    ],
+    "currencyType": "undefined",
+    "currency": null,
+    "itemCount": 1,
+    "itemKeys": {
+     "id": "string",
+     "name": "string",
+     "price": "string",
+     "quantity": "number"
+    },
+    "itemsWithoutIdOrName": 0,
+    "itemsWithoutPrice": 0,
+    "itemsWithoutQuantity": 0,
+    "itemSum": null,
+    "transactionId": null,
+    "clearedBefore": true
+   },
+   "safeValues": {
+    "event": "addToCart"
+   }
+  },
+  {
+   "i": 7,
+   "event": "purchase",
+   "src": "push",
+   "afterBaseline": false,
+   "keys": {
+    "event": "string",
+    "ecommerce": "object",
+    "ecommerce.transaction_id": "string",
+    "ecommerce.value": "number",
+    "ecommerce.currency": "string",
+    "ecommerce.items": "array",
+    "ecommerce.items[].item_name": "string",
+    "ecommerce.items[].price": "number",
+    "ecommerce.items[].quantity": "number"
+   },
+   "ecommerce": {
+    "shape": "ga4",
+    "uaActions": [],
+    "currencyType": "string",
+    "currency": "invalid",
+    "itemCount": 1,
+    "itemKeys": {
+     "item_name": "string",
+     "price": "number",
+     "quantity": "number"
+    },
+    "itemsWithoutIdOrName": 0,
+    "itemsWithoutPrice": 0,
+    "itemsWithoutQuantity": 0,
+    "itemSum": 24.99,
+    "transactionId": {
+     "type": "string",
+     "len": 6,
+     "fp": "1a5968"
+    },
+    "valueType": "number",
+    "value": 30,
+    "clearedBefore": true
+   },
+   "safeValues": {
+    "event": "purchase"
+   }
+  },
+  {
+   "i": 9,
+   "event": "purchase",
+   "src": "push",
+   "afterBaseline": false,
+   "keys": {
+    "event": "string",
+    "ecommerce": "object",
+    "ecommerce.transaction_id": "string",
+    "ecommerce.value": "number",
+    "ecommerce.currency": "string",
+    "ecommerce.items": "array",
+    "ecommerce.items[].item_name": "string",
+    "ecommerce.items[].price": "number",
+    "ecommerce.items[].quantity": "number"
+   },
+   "ecommerce": {
+    "shape": "ga4",
+    "uaActions": [],
+    "currencyType": "string",
+    "currency": "invalid",
+    "itemCount": 1,
+    "itemKeys": {
+     "item_name": "string",
+     "price": "number",
+     "quantity": "number"
+    },
+    "itemsWithoutIdOrName": 0,
+    "itemsWithoutPrice": 0,
+    "itemsWithoutQuantity": 0,
+    "itemSum": 24.99,
+    "transactionId": {
+     "type": "string",
+     "len": 6,
+     "fp": "1a5968"
+    },
+    "valueType": "number",
+    "value": 30,
+    "clearedBefore": true
+   },
+   "safeValues": {
+    "event": "purchase"
+   }
+  },
+  {
+   "i": 10,
+   "event": "begin_checkout",
+   "src": "gtag",
+   "afterBaseline": false,
+   "keys": {
+    "value": "number",
+    "items": "array"
+   },
+   "ecommerce": {
+    "shape": "ga4",
+    "uaActions": [],
+    "currencyType": "undefined",
+    "currency": null,
+    "itemCount": 1,
+    "itemKeys": {},
+    "itemsWithoutIdOrName": 1,
+    "itemsWithoutPrice": 1,
+    "itemsWithoutQuantity": 1,
+    "itemSum": null,
+    "transactionId": null,
+    "valueType": "number",
+    "value": 30,
+    "clearedBefore": true
+   }
+  },
+  {
+   "i": 11,
+   "event": "login",
+   "src": "push",
+   "afterBaseline": false,
+   "keys": {
+    "event": "string",
+    "user": "object",
+    "user.email": "string",
+    "user.id": "number"
+   },
+   "safeValues": {
+    "event": "login"
+   }
+  },
+  {
+   "i": 12,
+   "event": "generate_lead",
+   "src": "push",
+   "afterBaseline": true,
+   "keys": {
+    "event": "string",
+    "form_name": "string",
+    "user_data": "object",
+    "user_data.email": "string",
+    "user_data.phone_number": "string"
+   },
+   "safeValues": {
+    "event": "generate_lead",
+    "form_name": "Contact"
+   },
+   "userData": {
+    "key": "user_data",
+    "fields": {
+     "email": "plain",
+     "phone_number": "hashed"
+    }
+   }
+  },
+  {
+   "i": 13,
+   "event": "gtm.formSubmit",
+   "src": "push",
+   "afterBaseline": true,
+   "keys": {
+    "event": "string"
+   },
+   "safeValues": {
+    "event": "gtm.formSubmit"
+   },
+   "form": {
+    "id": "wpcf7-f12",
+    "classes": null
+   }
+  }
+ ],
+ "entriesTruncated": false,
+ "ecommercePushes": 6,
+ "skippedGtmEvents": {
+  "gtm.js": 1
+ },
+ "pii": [
+  {
+   "i": 11,
+   "path": "user.email",
+   "kind": "email",
+   "inUserData": false
+  },
+  {
+   "i": 12,
+   "path": "user_data.email",
+   "kind": "email",
+   "inUserData": true
+  }
+ ],
+ "forms": [
+  {
+   "id": "wpcf7-f12",
+   "name": null,
+   "classes": null,
+   "action": "same-origin",
+   "method": "post",
+   "fields": [
+    {
+     "name": "your-name",
+     "type": "text",
+     "required": false
+    },
+    {
+     "name": "your-email",
+     "type": "email",
+     "required": true
+    },
+    {
+     "name": "utm_source",
+     "type": "hidden",
+     "required": false
+    },
+    {
+     "name": "msg",
+     "type": "textarea",
+     "required": false
+    }
+   ],
+   "hasEmailField": true,
+   "hasPhoneField": false,
+   "hiddenAttributionFields": [
+    "utm_source"
+   ],
+   "submitLabel": "Send",
+   "looksLikeSearch": false
+  },
+  {
+   "id": null,
+   "name": null,
+   "classes": null,
+   "action": "same-origin",
+   "method": "get",
+   "fields": [
+    {
+     "name": "s",
+     "type": "search",
+     "required": false
+    }
+   ],
+   "hasEmailField": false,
+   "hasPhoneField": false,
+   "hiddenAttributionFields": [],
+   "submitLabel": null,
+   "looksLikeSearch": true
+  },
+  {
+   "id": null,
+   "name": null,
+   "classes": null,
+   "action": "placeholder",
+   "method": "get",
+   "fields": [
+    {
+     "name": "email",
+     "type": "email",
+     "required": false
+    }
+   ],
+   "hasEmailField": true,
+   "hasPhoneField": false,
+   "hiddenAttributionFields": [],
+   "submitLabel": null,
+   "looksLikeSearch": false
+  }
+ ],
+ "formVendors": [
+  "hubspot",
+  "contact_form_7"
+ ]
+}

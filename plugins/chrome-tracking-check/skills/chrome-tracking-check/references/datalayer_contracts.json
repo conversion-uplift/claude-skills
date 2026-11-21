@@ -1,0 +1,72 @@
+{
+  "_about": "Target data layer for GA4 ecommerce and lead generation, read by scripts/datalayer_spec.py. Checked against Google's GA4 recommended events reference (developers.google.com/analytics/devguides/collection/ga4/reference/events) on 16/11/2026. Re-check when Google changes the reference and note the date here.",
+  "_rules": {
+    "currency_required_when_value": true,
+    "item_identifier_one_of": ["item_id", "item_name"],
+    "clear_ecommerce_before_push": true,
+    "numeric_keys": ["value", "tax", "shipping", "price", "quantity", "discount"]
+  },
+  "ecommerce": {
+    "order": ["view_item_list", "select_item", "view_item", "add_to_cart", "remove_from_cart", "view_cart", "begin_checkout", "add_shipping_info", "add_payment_info", "purchase", "refund"],
+    "events": {
+      "view_item_list":   {"fires": "page",        "where": "Category, search results, product listings", "required": ["items"], "recommended": ["item_list_id", "item_list_name"], "value_required": false},
+      "select_item":      {"fires": "interaction", "where": "Click on a product in a list", "required": ["items"], "recommended": ["item_list_id", "item_list_name"], "value_required": false},
+      "view_item":        {"fires": "page",        "where": "Product page load (and variant change)", "required": ["items"], "recommended": ["currency", "value"], "value_required": false},
+      "add_to_cart":      {"fires": "interaction", "where": "Add to basket succeeded (not the click)", "required": ["items"], "recommended": ["currency", "value"], "value_required": false},
+      "remove_from_cart": {"fires": "interaction", "where": "Item removed from basket", "required": ["items"], "recommended": ["currency", "value"], "value_required": false},
+      "view_cart":        {"fires": "page",        "where": "Basket page or mini-basket opened", "required": ["items"], "recommended": ["currency", "value"], "value_required": false},
+      "begin_checkout":   {"fires": "page",        "where": "First checkout page", "required": ["items"], "recommended": ["currency", "value", "coupon"], "value_required": false},
+      "add_shipping_info":{"fires": "interaction", "where": "Delivery method confirmed", "required": ["items"], "recommended": ["currency", "value", "coupon", "shipping_tier"], "value_required": false},
+      "add_payment_info": {"fires": "interaction", "where": "Payment method chosen", "required": ["items"], "recommended": ["currency", "value", "coupon", "payment_type"], "value_required": false},
+      "purchase":         {"fires": "page",        "where": "Order confirmation, once per order", "required": ["transaction_id", "value", "currency", "items"], "recommended": ["tax", "shipping", "coupon"], "value_required": true, "critical": true},
+      "refund":           {"fires": "server",      "where": "Usually sent server-side (Measurement Protocol)", "required": ["transaction_id", "currency", "value"], "recommended": ["items"], "value_required": true, "critical": true}
+    },
+    "item": {
+      "one_of": ["item_id", "item_name"],
+      "recommended": ["item_id", "item_name", "price", "quantity", "item_brand", "item_category", "item_variant", "discount", "index", "item_list_name"]
+    },
+    "ua_to_ga4": {
+      "detail": "view_item", "add": "add_to_cart", "remove": "remove_from_cart", "checkout": "begin_checkout",
+      "checkout_option": "add_shipping_info / add_payment_info", "purchase": "purchase", "refund": "refund",
+      "impressions": "view_item_list", "click": "select_item", "promoView": "view_promotion", "promoClick": "select_promotion",
+      "id": "item_id", "name": "item_name", "brand": "item_brand", "category": "item_category", "variant": "item_variant"
+    }
+  },
+  "lead_gen": {
+    "order": ["form_start", "generate_lead", "qualify_lead", "disqualify_lead", "working_lead", "close_convert_lead", "close_unconvert_lead"],
+    "lead_event_names": ["generate_lead", "form_submit", "form_submission", "lead", "submit_lead", "contact", "enquiry", "enquiry_submit", "request_quote", "book_appointment", "sign_up"],
+    "events": {
+      "form_start":       {"fires": "interaction", "where": "First field touched (enhanced measurement sends this)", "required": [], "recommended": ["form_id", "form_name"]},
+      "generate_lead":    {"fires": "interaction", "where": "Form submitted AND the platform confirmed success", "required": [], "recommended": ["form_id", "form_name", "form_type", "lead_source", "value", "currency"], "critical": true},
+      "qualify_lead":     {"fires": "server",      "where": "CRM: lead marked qualified (offline / Measurement Protocol)", "required": [], "recommended": ["value", "currency"]},
+      "disqualify_lead":  {"fires": "server",      "where": "CRM: lead disqualified", "required": [], "recommended": ["value", "currency", "disqualified_lead_reason"]},
+      "working_lead":     {"fires": "server",      "where": "CRM: sales working the lead", "required": [], "recommended": ["value", "currency", "lead_status"]},
+      "close_convert_lead":   {"fires": "server",  "where": "CRM: lead became a customer", "required": [], "recommended": ["value", "currency"]},
+      "close_unconvert_lead": {"fires": "server",  "where": "CRM: lead closed without converting", "required": [], "recommended": ["value", "currency", "unconvert_lead_reason"]}
+    },
+    "form_identifier_keys": ["form_id", "form_name", "form_type", "lead_type", "form_destination"],
+    "attribution_hidden_fields": ["gclid", "gbraid", "wbraid", "fbclid", "msclkid", "utm_source", "utm_medium", "utm_campaign"]
+  },
+  "form_vendors": {
+    "hubspot":        {"label": "HubSpot forms", "listener": "Legacy embed: window message event where event.data.type === 'hsFormCallback' and event.data.eventName === 'onFormSubmitted'. New forms editor: window event 'hs-form-event:on-submission:success'.", "verify": "Check which embed version the site uses in GTM Preview."},
+    "marketo":        {"label": "Marketo forms", "listener": "MktoForms2.whenReady(form => form.onSuccess(() => { dataLayer.push({...}); return true; })) - returning true keeps Marketo's own redirect."},
+    "gravity_forms":  {"label": "Gravity Forms", "listener": "AJAX forms: jQuery(document).on('gform_confirmation_loaded', (e, formId) => ...). Non-AJAX forms: tag the confirmation page or redirect."},
+    "contact_form_7": {"label": "Contact Form 7", "listener": "document.addEventListener('wpcf7mailsent', e => ...) - e.detail.contactFormId identifies the form. Do not use 'wpcf7submit', which also fires on validation errors."},
+    "wpforms":        {"label": "WPForms", "listener": "AJAX forms: jQuery(document).on('wpformsAjaxSubmitSuccess', (e, response) => ...). Otherwise tag the confirmation page."},
+    "ninja_forms":    {"label": "Ninja Forms", "listener": "jQuery(document).on('nfFormSubmitResponse', (e, r) => ...) - check r.response.errors is empty before pushing."},
+    "elementor":      {"label": "Elementor forms", "listener": "jQuery(document).on('submit_success', e => ...) - e.target is the form."},
+    "fluent_forms":   {"label": "Fluent Forms", "listener": "jQuery(document).on('fluentform_submission_success', (e, data) => ...)."},
+    "formidable":     {"label": "Formidable Forms", "listener": "jQuery(document).on('frmFormComplete', (e, form, response) => ...)."},
+    "webflow":        {"label": "Webflow forms", "listener": "No success event. Watch for the .w-form-done block becoming visible (MutationObserver), or redirect to a tagged thank-you page."},
+    "squarespace":    {"label": "Squarespace forms", "listener": "No public success event. Watch for the form's submission message appearing (MutationObserver), or use a post-submit redirect to a tagged page.", "verify": "Selectors change between templates; confirm in GTM Preview."},
+    "klaviyo":        {"label": "Klaviyo sign-up forms", "listener": "window.addEventListener('klaviyoForms', e => { if (e.detail.type === 'submit') ... })."},
+    "mailchimp":      {"label": "Mailchimp embedded form", "listener": "Posts off-site. Use the hosted 'thank you' redirect to a tagged page, or the AJAX embed's success message."},
+    "salesforce_web_to_lead": {"label": "Salesforce Web-to-Lead", "listener": "Posts to Salesforce, then redirects to retURL. Tag the retURL page and fire generate_lead there only when the referrer is the form page."},
+    "pardot":         {"label": "Account Engagement (Pardot) iframe form", "listener": "The parent page cannot see inside the iframe. Use a completion redirect to a tagged page, or add a postMessage to the form's thank-you code and listen for it."},
+    "dynamics_365":   {"label": "Dynamics 365 Marketing forms", "listener": "document.addEventListener('d365mkt-afterformsubmit', e => { if (e.detail.successful) ... })."},
+    "typeform":       {"label": "Typeform embed", "listener": "Use the embed SDK's onSubmit callback (createWidget / data-tf-on-submit)."},
+    "jotform":        {"label": "Jotform embed", "listener": "Redirect to a tagged thank-you page, or use Jotform's own Google Analytics integration.", "verify": "Jotform's iframe messages are not a documented API; confirm in GTM Preview."},
+    "calendly":       {"label": "Calendly booking", "listener": "window message event from https://calendly.com where event.data.event === 'calendly.event_scheduled'."},
+    "shopify_contact":{"label": "Shopify contact form", "listener": "The page reloads with ?contact_posted=true (or #contact_form). Fire on that page state, not on the submit click."}
+  }
+}

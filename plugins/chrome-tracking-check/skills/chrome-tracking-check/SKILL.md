@@ -1,6 +1,6 @@
 ---
 name: chrome-tracking-check
-description: Checks the analytics and ad tracking on a live website by watching what the browser actually sends, using the Claude in Chrome extension, and writes a Word report with severity-rated findings, evidence and an A to F grade. Covers GA4, Google Tag Manager (including server-side GTM and Google tag gateway), Consent Mode v2 before and after the cookie banner, Google Ads, Meta, TikTok, Microsoft Ads, LinkedIn, Clarity, Hotjar and similar tags, duplicate events and console errors. Has an automated mode (Claude loads pages only) and a journey mode where a person adds to basket, goes through checkout, submits a form or places a test order while Claude records each step. Use when someone asks to check, audit, debug or QA tracking, asks whether GA4 or a pixel is firing, wants a consent mode check, wants to find duplicate events, or wants to test checkout or form tracking on a site they own.
+description: Checks the analytics and ad tracking on a live website by watching what the browser actually sends, using the Claude in Chrome extension, and writes a Word report with severity-rated findings, evidence and an A to F grade. Covers GA4, Google Tag Manager (including server-side GTM and Google tag gateway), Consent Mode v2 before and after the cookie banner, Google Ads, Meta, TikTok, Microsoft Ads, LinkedIn, Clarity and Hotjar, duplicate events and console errors, and documents the data layer for ecommerce events and lead forms as a developer specification. Automated mode loads pages; journey mode has a person add to basket, check out, submit a form or place a test order while Claude records each step. Use when someone asks to check, audit, debug or QA tracking, asks whether GA4 or a pixel is firing, wants a consent mode check, duplicate events found, the data layer documented, or checkout or form tracking tested on a site they own.
 license: MIT. See LICENSE.
 ---
 
@@ -9,7 +9,10 @@ license: MIT. See LICENSE.
 Drives a real Chrome browser through the Claude in Chrome extension to record
 which tags actually fire on a website, not what the page source suggests, and
 produces a Word report: findings by severity, the evidence for each, an A to F
-grade, and CSV and JSON exports.
+grade, and CSV and JSON exports. On ecommerce and lead generation sites it also
+documents the data layer: what each event pushes today, the gaps against GA4,
+the target push for each event, and the success signal for the site's form
+platform, as a Markdown specification a developer can build from.
 
 ## Contents
 
@@ -17,7 +20,7 @@ grade, and CSV and JSON exports.
 2. Pick a mode
 3. Rules that apply to every run
 4. Prerequisites
-5. Automated mode, phases 1 to 6
+5. Automated mode, phases 1 to 7
 6. Journey mode
 7. Repeat runs
 8. Failure modes
@@ -139,7 +142,12 @@ the `text` argument of `mcp__claude-in-chrome__javascript_tool`
    direction matches the button (rule 9 in `capture_and_claim_rules.md`).
 3. Re-navigate (or trigger a route change on single-page apps) and repeat steps
    2 to 5 of Pass A. Save as `post_consent`.
-4. If there's no banner, record "no consent banner detected" and skip this
+4. On product, category, basket, checkout, contact and thank-you pages, also run
+   `scripts/inspectors/probe_datalayer.js` and save it as the page's
+   `datalayer`, with `datalayer_expect` listing the events that page should push
+   on load (`references/datalayer_documentation.md` §2). Skip it elsewhere: it
+   is about 12KB per call.
+5. If there's no banner, record "no consent banner detected" and skip this
    pass.
 
 On a sample of templates, also run a **reject pass** and compare with accept.
@@ -164,7 +172,9 @@ Per-page record:
   "console_errors_pre": [{"message": "...", "source": "..."}],
   "console_errors_post": [],
   "network_status_codes": {"https://.../g/collect": 200},
-  "interactions_performed": "scrolled to footer; opened first product"
+  "interactions_performed": "scrolled to footer; opened first product",
+  "datalayer": {"...": "probe_datalayer.js output, key pages only"},
+  "datalayer_expect": ["view_item"]
 }
 ```
 
@@ -193,7 +203,23 @@ python scripts/journey_checks.py --journey journey.json \
   --aggregated audit_aggregated.json --output audit_aggregated.json
 ```
 
-### Phase 5: score and grade
+### Phase 5: document the data layer
+
+Run whenever any page or step carries a `datalayer` capture (always on
+ecommerce and lead generation sites):
+
+```bash
+python scripts/datalayer_spec.py --per-page audit_per_page.json   [--journey journey.json] --aggregated audit_aggregated.json   --output audit_aggregated.json   --doc datalayer_spec_example_com_YYYYMMDD.md --csv datalayer_example_com_YYYYMMDD.csv
+```
+
+It adds `DL_*` findings (each naming who fixes it: developer or GTM owner), an
+appendix for the report, and the developer specification. A data layer finding
+that names the cause of a problem already graded elsewhere becomes an Info
+"root cause" note, so one problem is never graded twice. Statuses follow the
+claim rules: "Not pushed" only where the page or step was captured, otherwise
+"Not tested". Details: `references/datalayer_documentation.md`.
+
+### Phase 6: score and grade
 
 ```bash
 python scripts/severity_scorer.py --findings audit_aggregated.json \
@@ -203,7 +229,7 @@ python scripts/severity_scorer.py --findings audit_aggregated.json \
 Weights and grade bands are in `references/severity_rubric.md`. Read it when
 explaining the grade.
 
-### Phase 6: build the report and exports
+### Phase 7: build the report and exports
 
 ```bash
 python scripts/build_report.py --scored audit_scored.json \
@@ -218,6 +244,9 @@ python scripts/exporters.py --scored audit_scored.json \
 The builder validates the file and exits non-zero if it is broken; never hand
 over a file that failed. Exports: findings, events and tag inventory CSVs, the
 full JSON, and BigQuery table definitions.
+
+Hand over the data layer specification (`--doc` file) with the report: it is
+what a developer works from.
 
 Then give the user the file and one short paragraph: the grade, the number of
 Critical and High findings, and the first thing to fix. Don't paste the
@@ -242,12 +271,15 @@ Follow `references/journey_protocol.md` exactly. In short:
 5. Before anyone types into a form, check whether Google Ads automatic
    form-data collection is firing (`references/google_ads_form_data.md`) and
    tell them if it is.
+   After each step, also run `probe_datalayer.js` and save it on the step
+   record as `datalayer`; it tells the person whether a gap is the site's push
+   or a GTM tag.
 6. Write the step records to `journey.json`. Add every page the journey
    reached (checkout, confirmation, thank-you) to `audit_per_page.json` as a
    page record with `template_label` "Journey: <step>", `pre_consent: null`
    and the `probe.js` snapshot as `post_consent`, so the page-level rules
    (personal data in payloads, consent) run on them too. Then run Phases 3
-   to 6.
+   to 7.
 
 Steps nobody performed are "Not tested", with the reason. Only steps a person
 performed may be reported as tested and not sent.
@@ -296,6 +328,7 @@ chrome-tracking-check/
 │   ├── aggregate_findings.py   all page-level rules, deterministic
 │   ├── normalise_probe.py      maps probe.js output onto the rules' input
 │   ├── journey_checks.py       journey-mode rules
+│   ├── datalayer_spec.py       data layer findings + developer specification
 │   ├── severity_scorer.py      severity and A to F grade
 │   ├── build_report.py         Word report (python-docx)
 │   ├── report_helpers.py       report formatting helpers
@@ -305,17 +338,20 @@ chrome-tracking-check/
 │   └── inspectors/
 │       ├── probe.js            the page inspector (readable, about 10KB)
 │       ├── probe_baseline.js   marks the starting point, lab vitals
-│       └── probe_delta.js      what changed since the baseline
+│       ├── probe_delta.js      what changed since the baseline
+│       └── probe_datalayer.js  data layer shape, forms and form platform (no values)
 ├── references/                 read the one a phase names, when it names it
 │   ├── capture_and_claim_rules.md   read before every run
 │   ├── limitations.md               read before writing findings
 │   ├── journey_protocol.md          journey mode
 │   ├── google_ads_form_data.md      before anyone types in a form
+│   ├── datalayer_documentation.md   data layer phase; datalayer_contracts.json
 │   ├── consent_mode_v2.md, duplicate_event_patterns.md,
 │   │   ga4_validation_rules.md, ga4_event_taxonomy.md,
 │   │   severity_rubric.md, detection_signatures.md,
 │   │   server_side_signals.md, sgtm_detection.md,
 │   │   tag_gateway_detection.md, site_type_detection.md, ...
 ├── recipes/                    one JSON file per platform
-└── tests/                      self-test: a local fake shop and run_fixture.py
+└── tests/                      self-test: a local fake shop and run_fixture.py;
+                                test_datalayer_spec.py (no browser needed)
 ```

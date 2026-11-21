@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Self-test: run the real inspectors against a local fake shop, then the
-whole pipeline (aggregate, journey, score, report, exports).
+whole pipeline (aggregate, journey, data layer, score, report, exports).
 
 Needs Playwright for Python and a Chromium build:
     pip install playwright && python -m playwright install chromium
@@ -97,9 +97,10 @@ def main():
         browser = p.chromium.launch(**kw)
 
         # ---- automated mode: two passes per page in fresh contexts ----
+        expect = {"/product.html": ["view_item"], "/checkout.html": ["begin_checkout"]}
         for path, label in [("/", "Homepage"), ("/product.html", "Product"), ("/checkout.html", "Checkout")]:
             rec = {"url": BASE + path, "template_label": label, "network_status_codes": {},
-                   "interactions_performed": "none"}
+                   "interactions_performed": "none", "datalayer_expect": expect.get(path, [])}
             for pass_name in ("pre_consent", "post_consent"):
                 ctx = browser.new_context(ignore_https_errors=True)
                 ctx.route("**/*", route)
@@ -114,6 +115,8 @@ def main():
                 run_eval(pg, "probe_baseline.js")
                 pg.wait_for_timeout(2000)
                 rec[pass_name] = run_eval(pg, "probe.js")
+                if pass_name == "post_consent":
+                    rec["datalayer"] = run_eval(pg, "probe_datalayer.js")
                 rec["console_errors_pre" if pass_name == "pre_consent" else "console_errors_post"] = errs
                 ctx.close()
             pages.append(rec)
@@ -134,9 +137,11 @@ def main():
         assert not delta["navigated"], delta
         steps.append(step_record("add_to_cart", "Add to basket", "user", pg.url, "add_to_cart",
                                  ga4_from_resources(pg, n), other_platforms(pg)))
+        steps[-1]["datalayer"] = run_eval(pg, "probe_datalayer.js")
         pg.click("text=Checkout"); pg.wait_for_load_state(); pg.wait_for_timeout(1000)   # the person
         steps.append(step_record("begin_checkout", "Go to checkout", "user", pg.url, "begin_checkout",
                                  ga4_from_resources(pg), other_platforms(pg)))
+        steps[-1]["datalayer"] = run_eval(pg, "probe_datalayer.js")
         steps.append({"step": "add_shipping_info", "step_label": "Delivery details", "performed_by": "user",
                       "status": "no_separate_step", "url": pg.url.split("?")[0], "expected_ga4_event": "add_shipping_info"})
         pg.fill("input[name=email]", "test@example.com")                       # the person
@@ -144,6 +149,7 @@ def main():
         conf = run_eval(pg, "probe.js")
         steps.append(step_record("purchase", "Test purchase", "user", pg.url, "purchase",
                                  ga4_from_resources(pg), other_platforms(pg)))
+        steps[-1]["datalayer"] = run_eval(pg, "probe_datalayer.js")
         ctx.close(); browser.close()
     journey = {"site_type": "ecommerce", "permission_confirmed": True,
                "platforms_present": ["ga4", "google_ads", "meta"],
@@ -162,6 +168,9 @@ def main():
         subprocess.run([sys.executable, *map(str, args)], check=True)
     py(S / "aggregate_findings.py", "--per-page", per_page, "--output", out / "agg.json")
     py(S / "journey_checks.py", "--journey", out / "journey.json", "--aggregated", out / "agg.json", "--output", out / "agg.json")
+    py(S / "datalayer_spec.py", "--per-page", per_page, "--journey", out / "journey.json",
+       "--aggregated", out / "agg.json", "--output", out / "agg.json",
+       "--doc", out / "datalayer_spec_shop_test.md", "--csv", out / "datalayer_shop_test.csv")
     py(S / "severity_scorer.py", "--findings", out / "agg.json", "--output", out / "scored.json")
     py(S / "build_report.py", "--scored", out / "scored.json", "--site", BASE, "--output", out / "tracking_check_shop_test.docx")
     py(S / "exporters.py", "--scored", out / "scored.json", "--per-page", per_page, "--site", BASE, "--output-dir", out)
@@ -169,6 +178,12 @@ def main():
     print("Grade", sc["grade"], sc["score"], sc["summary_counts"])
     for f in sc["findings"]:
         print(f" - [{f['severity']}{'+' if f.get('positive') else ''}] {f['id']}: {f['title']}")
+    # The fixture shop pushes well-formed GA4 ecommerce events; the data layer layer must agree.
+    dl = {r["event"]: r["status"] for r in sc["datalayer_spec"]["events"]}
+    assert dl.get("purchase") == "Pushed", dl
+    assert dl.get("view_item") in ("Pushed", "Pushed, with gaps"), dl
+    assert dl.get("add_shipping_info") == "Not tested", dl
+    print("Data layer:", dl)
 
 
 if __name__ == "__main__":

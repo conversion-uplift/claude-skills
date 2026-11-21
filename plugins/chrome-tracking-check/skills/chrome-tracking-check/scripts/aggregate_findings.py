@@ -1036,6 +1036,8 @@ def _schema_contract_rule(pages: list[dict], fb: FindingBuilder) -> None:
                 continue  # parameters not readable on this capture; unverified, not missing
             required = set(contract.get("required") or [])
             seen = set(slot.get("param_names") or [])
+            if "value" in seen:
+                required.add("currency")  # GA4 needs currency whenever value is sent
             missing = required - seen
             if missing:
                 sev = "High" if name in critical else "Medium"

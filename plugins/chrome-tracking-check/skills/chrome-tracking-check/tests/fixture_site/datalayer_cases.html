@@ -1,0 +1,23 @@
+<!doctype html><html><head><script>
+window.dataLayer=[];function gtag(){dataLayer.push(arguments);}
+gtag('consent','default',{ad_storage:'denied'});
+dataLayer.push({event:'gtm.js'});
+dataLayer.push({event:'view_item_list',ecommerce:{item_list_name:'Shoes',items:[{item_id:'A',item_name:'Shoe',price:10,quantity:1},{item_id:'B',price:'12.00'}]}});
+dataLayer.push({event:'view_item',ecommerce:{currency:'GBP',value:'£24.99',items:[{item_id:'A',item_name:'Shoe',price:24.99}]}});
+dataLayer.push({ecommerce:null});
+dataLayer.push({event:'addToCart',ecommerce:{currencyCode:'GBP',add:{products:[{id:'A',name:'Shoe',price:'24.99',quantity:1}]}}});
+dataLayer.push({ecommerce:null});
+dataLayer.push({event:'purchase',ecommerce:{transaction_id:'T-1001',value:30,currency:'gbp',items:[{item_name:'Shoe',price:24.99,quantity:1}]}});
+dataLayer.push({ecommerce:null});
+dataLayer.push({event:'purchase',ecommerce:{transaction_id:'T-1001',value:30,currency:'gbp',items:[{item_name:'Shoe',price:24.99,quantity:1}]}});
+gtag('event','begin_checkout',{value:30,items:[{}]});
+dataLayer.push({event:'login',user:{email:'jane@example.com',id:5}});
+window.__tcBase={dl:dataLayer.length,res:0};
+dataLayer.push({event:'generate_lead',form_name:'Contact',user_data:{email:'jane@example.com',phone_number:'a'.repeat(64)}});
+dataLayer.push({event:'gtm.formSubmit','gtm.elementId':'wpcf7-f12'});
+</script></head><body>
+<div class="wpcf7"><form id="wpcf7-f12" action="/contact/#wpcf7" method="post"><input name="your-name"><input type="email" name="your-email" required><input type="hidden" name="utm_source"><textarea name="msg"></textarea><button type="submit">Send</button></form></div>
+<form role="search" action="/"><input type="search" name="s"></form>
+<form action="https://example.com/handler"><input name="email" type="email"></form>
+<script>window.hbspt={};</script>
+</body></html>

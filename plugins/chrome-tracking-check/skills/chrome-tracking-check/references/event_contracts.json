@@ -1,5 +1,5 @@
 {
-  "_about": "Required and recommended parameter names for GA4 events. Used by aggregate_findings.py to emit GA4_EVENT_PARAM_MISSING. Parameter values are out of scope (we only check NAMES) to avoid PII intake.",
+  "_about": "Required and recommended parameter names for GA4 events. Used by aggregate_findings.py to emit GA4_EVENT_PARAM_MISSING. Parameter values are out of scope (we only check NAMES) to avoid PII intake. GA4 requires currency only when value is sent, and value is required only on purchase and refund; on other ecommerce events both are recommended (corrected 16/11/2026).",
   "_severity": {
     "required_missing_default": "Medium",
     "required_missing_on_critical_events": "High"
@@ -15,32 +15,32 @@
       "recommended": ["items"]
     },
     "add_to_cart": {
-      "required": ["currency", "value", "items"],
-      "recommended": []
+      "required": ["items"],
+      "recommended": ["currency", "value"]
     },
     "remove_from_cart": {
-      "required": ["currency", "value", "items"],
-      "recommended": []
+      "required": ["items"],
+      "recommended": ["currency", "value"]
     },
     "view_cart": {
-      "required": ["currency", "value", "items"],
-      "recommended": []
+      "required": ["items"],
+      "recommended": ["currency", "value"]
     },
     "begin_checkout": {
-      "required": ["currency", "value", "items"],
-      "recommended": ["coupon"]
+      "required": ["items"],
+      "recommended": ["currency", "value", "coupon"]
     },
     "add_shipping_info": {
-      "required": ["currency", "value", "items"],
-      "recommended": ["coupon", "shipping_tier"]
+      "required": ["items"],
+      "recommended": ["currency", "value", "coupon", "shipping_tier"]
     },
     "add_payment_info": {
-      "required": ["currency", "value", "items"],
-      "recommended": ["coupon", "payment_type"]
+      "required": ["items"],
+      "recommended": ["currency", "value", "coupon", "payment_type"]
     },
     "view_item": {
-      "required": ["currency", "value", "items"],
-      "recommended": []
+      "required": ["items"],
+      "recommended": ["currency", "value"]
     },
     "view_item_list": {
       "required": ["items"],
@@ -95,6 +95,7 @@
       "recommended": []
     }
   },
-  "item_required": ["item_id", "item_name"],
-  "item_recommended": ["price", "quantity", "item_brand", "item_category", "item_variant", "discount", "index"]
+  "item_required": ["item_id"],
+  "item_recommended": ["price", "quantity", "item_brand", "item_category", "item_variant", "discount", "index"],
+  "item_required_note": "GA4 needs item_id OR item_name on each item; datalayer_contracts.json applies the one-of rule."
 }
